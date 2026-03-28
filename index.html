@@ -46,13 +46,21 @@
       max-height: 850px;
       background: #020202;
       position: relative;
-      border-radius: 12px;
+      border-radius: 0; /* Removing for mobile flush look, re-add on md+ */
       box-shadow: 0 0 100px rgba(255, 176, 0, 0.05), inset 0 0 120px rgba(0,0,0,1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border: 1px solid #1a1a1a;
-      outline: 4px solid #050505;
+      border: none;
+      outline: none;
+    }
+
+    @media (min-width: 768px) {
+      .monitor-frame {
+        border-radius: 12px;
+        border: 1px solid #1a1a1a;
+        outline: 4px solid #050505;
+      }
     }
 
     /* Heavy CRT Vignette & Screen Curvature */
@@ -106,7 +114,8 @@
     @keyframes tracking { 0% { top: -10%; } 100% { top: 110%; } }
 
     /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 10px; background: #000; border-left: 1px solid var(--phosphor-dark); }
+    ::-webkit-scrollbar { width: 6px; background: #000; border-left: 1px solid var(--phosphor-dark); }
+    @media (min-width: 768px) { ::-webkit-scrollbar { width: 10px; } }
     ::-webkit-scrollbar-thumb { background: var(--phosphor-dim); border-radius: 0; }
     ::-webkit-scrollbar-thumb:hover { background: var(--phosphor-amber); }
 
@@ -158,6 +167,17 @@
     }
     @keyframes blink { 50% { opacity: 0; } }
 
+    /* Responsive Sidebar Classes */
+    .sidebar-closed { width: 0; padding-left: 0; padding-right: 0; opacity: 0; border-width: 0; }
+    .sidebar-open { width: 100%; opacity: 1; padding-left: 1rem; padding-right: 1rem; border-width: 1px; }
+    @media (min-width: 768px) {
+      .sidebar-open { width: 18rem; }
+    }
+
+    /* Responsive Canvas Wrappers */
+    .canvas-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .canvas-wrapper canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+
   </style>
 </head>
 <body>
@@ -170,32 +190,38 @@
     <!-- ========================================== -->
     <!-- LANDING PAGE / NOCLIP GATEWAY              -->
     <!-- ========================================== -->
-    <div id="landing-view" class="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden">
+    <div id="landing-view" class="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-x-hidden overflow-y-auto py-8">
       
       <!-- Interactive 3D Tunnel Canvas -->
-      <canvas id="landing-canvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+      <canvas id="landing-canvas" class="absolute inset-0 w-full h-full opacity-60 fixed"></canvas>
       
-      <div class="absolute inset-0 bg-black/40 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-black/40 pointer-events-none fixed"></div>
 
       <!-- Landing Content -->
-      <div class="relative z-10 flex flex-col items-center text-center max-w-4xl px-8">
-        <div class="mb-2 text-red-600 font-bold text-2xl tracking-[0.5em] animate-pulse border border-red-900 bg-red-950/40 px-4 py-1">
+      <div class="relative z-10 flex flex-col items-center text-center max-w-4xl px-4 md:px-8 mt-auto mb-auto">
+        <div class="mb-4 text-red-600 font-bold text-lg md:text-2xl tracking-[0.3em] md:tracking-[0.5em] animate-pulse border border-red-900 bg-red-950/40 px-4 py-1">
           WARNING: CLASSIFIED LEVEL 4
         </div>
-        <h1 class="text-6xl md:text-8xl font-bold tracking-widest crt-glow mb-2 text-[#ffb000]">THE EREBUS DIRECTIVE</h1>
-        <h2 class="text-xl md:text-2xl text-[var(--phosphor-dim)] tracking-[0.3em] mb-12 border-b border-[var(--phosphor-dark)] pb-4 w-full">
+        <h1 class="text-4xl sm:text-6xl md:text-8xl font-bold tracking-widest crt-glow mb-2 text-[#ffb000]">THE EREBUS DIRECTIVE</h1>
+        <h2 class="text-sm sm:text-xl md:text-2xl text-[var(--phosphor-dim)] tracking-[0.1em] md:tracking-[0.3em] mb-8 md:mb-12 border-b border-[var(--phosphor-dark)] pb-4 w-full">
           FILE REF: EITR-1973-OMICRON
         </h2>
 
-        <div class="bg-black/80 border border-[var(--phosphor-dark)] p-6 mb-12 text-left w-full shadow-[0_0_30px_rgba(255,176,0,0.05)] min-h-[160px]">
+        <div class="bg-black/80 border border-[var(--phosphor-dark)] p-4 md:p-6 mb-8 md:mb-12 text-left w-full shadow-[0_0_30px_rgba(255,176,0,0.05)] min-h-[160px]">
           <p class="text-xs text-[var(--phosphor-dim)] mb-2">>> DECRYPTING EXECUTIVE SUMMARY...</p>
-          <p id="landing-typing-text" class="text-lg text-[var(--phosphor-amber)] leading-relaxed h-full typewriter-text"></p>
+          <p id="landing-typing-text" class="text-sm md:text-lg text-[var(--phosphor-amber)] leading-relaxed h-full typewriter-text"></p>
         </div>
 
-        <button id="btn-enter-terminal" class="group relative px-8 py-4 bg-[#1a1500] border-2 border-[var(--phosphor-amber)] text-[var(--phosphor-amber)] text-2xl font-bold tracking-widest hover:bg-[var(--phosphor-amber)] hover:text-black transition-all cursor-pointer shadow-[0_0_20px_rgba(255,176,0,0.2)] hover:shadow-[0_0_40px_rgba(255,176,0,0.6)]">
-          <span class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></span>
-          [ BREACH BASELINE // INITIATE UPLINK ]
-        </button>
+        <div class="flex flex-col md:flex-row gap-4 justify-center w-full">
+          <button id="btn-enter-terminal" class="group relative px-6 md:px-8 py-3 md:py-4 bg-[#1a1500] border-2 border-[var(--phosphor-amber)] text-[var(--phosphor-amber)] text-lg md:text-2xl font-bold tracking-widest hover:bg-[var(--phosphor-amber)] hover:text-black transition-all cursor-pointer shadow-[0_0_20px_rgba(255,176,0,0.2)] hover:shadow-[0_0_40px_rgba(255,176,0,0.6)] w-full md:w-auto">
+            <span class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></span>
+            [ INITIATE UPLINK ]
+          </button>
+          
+          <a href="backroom.pdf" download class="group relative px-6 md:px-8 py-3 md:py-4 bg-transparent border-2 border-[var(--phosphor-dim)] text-[var(--phosphor-amber)] text-lg md:text-2xl font-bold tracking-widest hover:border-[var(--phosphor-amber)] hover:bg-[var(--phosphor-dark)] transition-all cursor-pointer w-full md:w-auto block text-center decoration-none">
+            [ DOWNLOAD EITR-1973.PDF ]
+          </a>
+        </div>
       </div>
     </div>
 
@@ -205,29 +231,32 @@
     <!-- ========================================== -->
     <div id="terminal-view" class="hidden flex-col w-full h-full">
       <!-- TACTICAL HEADER -->
-      <div class="w-full border-b border-[var(--phosphor-dim)] p-4 flex justify-between items-center bg-[#020202] z-10 shrink-0">
-        <div class="flex items-center gap-6">
-          <button id="menu-toggle" class="border border-[var(--phosphor-dim)] text-[var(--phosphor-amber)] px-4 py-2 hover:bg-[var(--phosphor-dark)] transition-colors cursor-pointer text-lg font-bold tracking-widest shadow-[inset_0_0_10px_rgba(255,176,0,0.1)]">
+      <div class="w-full border-b border-[var(--phosphor-dim)] p-2 md:p-4 flex justify-between items-center bg-[#020202] z-10 shrink-0">
+        <div class="flex items-center gap-2 md:gap-6">
+          <button id="menu-toggle" class="border border-[var(--phosphor-dim)] text-[var(--phosphor-amber)] px-2 md:px-4 py-1 md:py-2 hover:bg-[var(--phosphor-dark)] transition-colors cursor-pointer text-sm md:text-lg font-bold tracking-widest shadow-[inset_0_0_10px_rgba(255,176,0,0.1)]">
             [≡] MENU
           </button>
-          <button id="audio-toggle" class="border-2 border-[var(--phosphor-amber)] bg-[#1a1500] text-[var(--phosphor-amber)] shadow-[0_0_10px_#ffb000] px-4 py-2 transition-colors cursor-pointer text-lg tracking-widest">
-            [■] AUDIO: ON
+          <button id="audio-toggle" class="hidden sm:block border-2 border-[var(--phosphor-amber)] bg-[#1a1500] text-[var(--phosphor-amber)] shadow-[0_0_10px_#ffb000] px-2 md:px-4 py-1 md:py-2 transition-colors cursor-pointer text-sm md:text-lg tracking-widest">
+            [■] AUDIO
           </button>
-          <div class="pl-4 border-l border-[var(--phosphor-dark)]">
-            <h1 class="text-3xl font-bold tracking-widest leading-none crt-glow">EREBUS COMMAND</h1>
-            <h2 class="text-sm text-[var(--phosphor-dim)] tracking-[0.2em] mt-1">OUTPOST 31 // WILKES LAND, ANTARCTICA</h2>
+          <button id="audio-toggle-mobile" class="sm:hidden border border-[var(--phosphor-amber)] bg-[#1a1500] text-[var(--phosphor-amber)] px-2 py-1 transition-colors cursor-pointer text-xs tracking-widest">
+            [■] SND
+          </button>
+          <div class="pl-2 md:pl-4 border-l border-[var(--phosphor-dark)]">
+            <h1 class="text-xl md:text-3xl font-bold tracking-widest leading-none crt-glow text-[#ffb000]">EREBUS</h1>
+            <h2 class="text-[10px] md:text-sm text-[var(--phosphor-dim)] tracking-[0.1em] md:tracking-[0.2em] mt-1 hidden sm:block">OUTPOST 31 // WILKES LAND, ANTARCTICA</h2>
           </div>
         </div>
         
         <!-- Telemetry Stream / Status -->
-        <div class="text-right flex flex-col items-end">
-          <div class="flex items-center gap-3">
-            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_#f00]"></div>
-            <span class="text-red-500 font-bold text-xl tracking-widest border border-red-900 px-2 py-0.5 bg-red-950/30">CLASSIFIED_LVL_4</span>
+        <div class="text-right flex-col items-end hidden sm:flex">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-2 h-2 md:w-3 md:h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_#f00]"></div>
+            <span class="text-red-500 font-bold text-sm md:text-xl tracking-widest border border-red-900 px-1 md:px-2 py-0.5 bg-red-950/30">CLASS_4</span>
           </div>
-          <div class="text-xs text-[var(--phosphor-dim)] mt-2 font-mono flex items-center gap-2">
+          <div class="text-[10px] md:text-xs text-[var(--phosphor-dim)] mt-1 md:mt-2 font-mono flex items-center gap-2">
             <span>UPLINK:</span>
-            <div id="telemetry-stream" class="w-48 text-right overflow-hidden whitespace-nowrap opacity-70">
+            <div id="telemetry-stream" class="w-24 md:w-48 text-right overflow-hidden whitespace-nowrap opacity-70">
               0X9A4F...
             </div>
           </div>
@@ -238,143 +267,150 @@
       <div class="flex flex-1 overflow-hidden relative bg-[#020202]">
         
         <!-- SIDEBAR -->
-        <div id="sidebar" class="bg-[#050505] border-r border-[var(--phosphor-dark)] flex flex-col shrink-0 z-20 transition-all duration-300 ease-in-out w-72 pt-2 relative">
+        <!-- Start hidden on mobile, open on md+ -->
+        <div id="sidebar" class="sidebar-closed md:sidebar-open bg-[#050505] border-r border-[var(--phosphor-dark)] flex flex-col shrink-0 z-[60] transition-all duration-300 ease-in-out pt-2 absolute md:relative h-full overflow-y-auto">
           <div class="absolute inset-0 bg-[var(--crt-glass)] pointer-events-none"></div>
           
-          <div class="px-4 py-3 mb-2 border-b border-[var(--phosphor-dark)] text-sm opacity-80">
+          <div class="py-3 mb-2 border-b border-[var(--phosphor-dark)] text-sm opacity-80 whitespace-nowrap overflow-hidden">
             <span class="text-green-500">&gt; EITR-1973 DECRYPTED.</span><br>
-            <span class="text-[var(--phosphor-amber)]">&gt; SELECT TELEMETRY MODULE:</span>
+            <span class="text-[var(--phosphor-amber)]">&gt; SELECT MODULE:</span>
           </div>
           
           <button class="nav-btn active" data-phase="1">
-            [1] TOPOLOGICAL ENTRY <br/><span class="text-xs opacity-60">Spacetime Elasticity Model</span>
+            [1] TOPOLOGICAL ENTRY <br/><span class="text-xs opacity-60 hidden md:inline">Spacetime Elasticity</span>
           </button>
           <button class="nav-btn" data-phase="2">
-            [2] SCHRÖDINGER ENVIRONMENT <br/><span class="text-xs opacity-60">Quantum Wavefunction Collapse</span>
+            [2] SCHRÖDINGER EVM <br/><span class="text-xs opacity-60 hidden md:inline">Quantum Collapse</span>
           </button>
           <button class="nav-btn" data-phase="3">
-            [3] HYPERBOLIC CONFINEMENT <br/><span class="text-xs opacity-60">Volume/Search Desynchronization</span>
+            [3] HYPERBOLIC TRAP <br/><span class="text-xs opacity-60 hidden md:inline">Volume Desync</span>
           </button>
           <button class="nav-btn" data-phase="4">
-            [4] GENERATION ALGORITHM <br/><span class="text-xs opacity-60">Stochastic Wang-Tiling Sim</span>
+            [4] ALGORITHMIC GEN <br/><span class="text-xs opacity-60 hidden md:inline">Wang-Tiling Sim</span>
           </button>
           <button class="nav-btn" data-phase="5">
-            [5] CONTAINMENT GRID <br/><span class="text-xs opacity-60">Sector 4 Integrity Radar</span>
+            [5] CONTAINMENT GRID <br/><span class="text-xs opacity-60 hidden md:inline">Sector 4 Radar</span>
           </button>
 
-          <div class="mt-auto p-4 border-t border-[var(--phosphor-dark)]">
-            <div class="text-xs text-red-500 bg-red-950/20 border border-red-900 p-2 text-justify">
-              <span class="font-bold">NOTICE:</span> PERSONNEL ENTERING THE 50M WEAK-POINT EXCLUSION ZONE WILL BE CONSIDERED MIA. NO RESCUE EFFORTS WILL BE AUTHORIZED.
+          <div class="mt-auto pt-4 border-t border-[var(--phosphor-dark)] flex flex-col">
+            <div class="text-[10px] md:text-xs text-red-500 bg-red-950/20 border border-red-900 p-2 text-justify mb-4">
+              <span class="font-bold">NOTICE:</span> ENTRY TO 50M WEAK-POINT EXCLUSION ZONE WILL RESULT IN MIA STATUS.
             </div>
+            
+            <a href="backroom.pdf" download class="block w-full text-center border border-[var(--phosphor-amber)] text-[var(--phosphor-amber)] px-4 py-2 hover:bg-[var(--phosphor-dark)] hover:text-white transition-colors text-sm font-bold tracking-widest shadow-[0_0_10px_rgba(255,176,0,0.1)]">
+              [ DOWNLOAD PDF ]
+            </a>
           </div>
         </div>
 
         <!-- VISUALIZATIONS -->
-        <div class="flex-1 p-8 relative overflow-y-auto">
+        <div class="flex-1 p-2 md:p-8 relative overflow-y-auto overflow-x-hidden">
           <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(var(--phosphor-dim) 1px, transparent 1px); background-size: 30px 30px;"></div>
           
           <!-- PHASE 1: NOCLIPPING -->
           <div id="phase-1" class="phase-container active panel-border p-1">
-            <div class="p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
-              <h3 class="text-2xl mb-1 crt-glow">MODULE 1: SPACETIME ELASTICITY & NOCLIPPING</h3>
-              <p class="text-sm opacity-80 leading-relaxed">
-                Observation: Spacetime behaves structurally as a tensile fabric. If localized anomalous pressure (σ) exceeds the ultimate yield strength (σ_crit), a micro-shear zone opens, depositing the object into sub-dimensional space.
+            <div class="p-2 md:p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
+              <h3 class="text-xl md:text-2xl mb-1 crt-glow">MOD 1: SPACETIME ELASTICITY & NOCLIPPING</h3>
+              <p class="text-xs md:text-sm opacity-80 leading-relaxed">
+                Observation: Spacetime behaves structurally as a tensile fabric. If localized anomalous pressure (σ) exceeds the ultimate yield strength (σ_crit), a micro-shear zone opens.
               </p>
             </div>
-            <div class="flex-1 relative flex flex-col p-6 bg-[#020202]">
-              <div class="w-full flex-1 min-h-[300px] border border-[var(--phosphor-dark)] relative overflow-hidden bg-black shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
+            <div class="flex-1 relative flex flex-col p-2 md:p-6 bg-[#020202]">
+              <div class="w-full flex-1 min-h-[250px] md:min-h-[300px] border border-[var(--phosphor-dark)] relative overflow-hidden bg-black shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
                 <div class="absolute bottom-0 w-full h-1/2 bg-[#e6dc83] flex flex-col justify-center items-center overflow-hidden opacity-80">
                   <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.8) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.8) 75%, rgba(0,0,0,0.8)), repeating-linear-gradient(45deg, rgba(0,0,0,0.8) 25%, #e6dc83 25%, #e6dc83 75%, rgba(0,0,0,0.8) 75%, rgba(0,0,0,0.8)); background-position: 0 0, 10px 10px; background-size: 20px 20px; opacity: 0.15;"></div>
-                  <span class="text-black font-bold z-10 text-xl tracking-widest opacity-40">SUB-DIMENSION L-0</span>
+                  <span class="text-black font-bold z-10 text-lg md:text-xl tracking-widest opacity-40 text-center">SUB-DIMENSION L-0</span>
                 </div>
                 <svg id="phase1-svg" class="absolute inset-0 w-full h-full" viewBox="0 0 500 400" preserveAspectRatio="none"></svg>
               </div>
-              <div class="mt-6 p-4 border border-[var(--phosphor-dark)] bg-[#050505]">
-                <label class="block text-xl mb-4 flex justify-between items-end">
+              <div class="mt-4 md:mt-6 p-2 md:p-4 border border-[var(--phosphor-dark)] bg-[#050505]">
+                <label class="block text-sm md:text-xl mb-2 md:mb-4 flex justify-between items-end">
                   <span>LOCALIZED STRESS TENSOR (σ)</span>
-                  <span id="p1-pressure-val" class="text-3xl text-white">0%</span>
+                  <span id="p1-pressure-val" class="text-xl md:text-3xl text-white">0%</span>
                 </label>
                 <input type="range" id="p1-slider" min="0" max="100" value="0">
-                <div class="flex justify-between text-xs opacity-60 mt-2">
+                <div class="flex justify-between text-[10px] md:text-xs opacity-60 mt-2">
                   <span>STABLE BOUNDARY</span><span>CRITICAL RUPTURE (σ_crit)</span>
                 </div>
               </div>
-              <div id="p1-warning" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-950 border border-red-500 text-white p-4 text-center animate-pulse shadow-[0_0_30px_#f00] z-20 hidden">
-                <h4 class="text-2xl font-bold mb-1">CATASTROPHIC SHEAR</h4>
-                <p>TOPOLOGICAL BOUNDARY BREACHED. SUBJECT TERMINATED FROM BASELINE.</p>
+              <div id="p1-warning" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-950 border border-red-500 text-white p-2 md:p-4 text-center animate-pulse shadow-[0_0_30px_#f00] z-20 hidden w-11/12 md:w-auto">
+                <h4 class="text-lg md:text-2xl font-bold mb-1">CATASTROPHIC SHEAR</h4>
+                <p class="text-xs md:text-base">TOPOLOGICAL BOUNDARY BREACHED. SUBJECT TERMINATED.</p>
               </div>
             </div>
           </div>
 
           <!-- PHASE 2: SCHRODINGER'S MAZE -->
           <div id="phase-2" class="phase-container panel-border p-1">
-            <div class="p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
-              <h3 class="text-2xl mb-1 crt-glow flex justify-between items-center">
-                <span>MODULE 2: QUANTUM PROCEDURAL RENDERING</span>
-                <span class="text-xs bg-[var(--phosphor-dark)] text-white px-3 py-1 animate-pulse border border-[var(--phosphor-amber)]">CONTROLS: W,A,S,D (MOVE) // MOUSE (LOOK)</span>
+            <div class="p-2 md:p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
+              <h3 class="text-xl md:text-2xl mb-1 crt-glow flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <span>MOD 2: QUANTUM PROCEDURAL RENDERING</span>
+                <span class="text-[10px] md:text-xs bg-[var(--phosphor-dark)] text-white px-2 py-1 animate-pulse border border-[var(--phosphor-amber)] text-center">
+                  PC: WASD+MOUSE // MOBILE: TOUCH & DRAG
+                </span>
               </h3>
-              <p class="text-sm opacity-80 leading-relaxed">
+              <p class="text-xs md:text-sm opacity-80 leading-relaxed hidden md:block">
                 "The universe instantly builds physical matter upon observation. Unobserved space reverts to quantum probability."<br>
                 <span class="text-xs text-[var(--phosphor-dim)]">*Note: Infinite space simulation active. Because unobserved walls do not exist, walking backwards allows clipping through potential obstructions.</span>
               </p>
             </div>
-            <div class="flex-1 p-6 flex flex-col items-center justify-center relative bg-[#020202]">
-              <div class="border border-[var(--phosphor-dark)] relative cursor-crosshair shadow-[0_0_20px_rgba(255,176,0,0.05)] w-full max-w-[900px] h-[500px]">
-                <canvas id="phase2-canvas" width="900" height="500" class="block w-full h-full bg-black"></canvas>
-                <div class="absolute top-4 left-4 text-xs text-white bg-black/80 px-2 py-1 border border-[var(--phosphor-dim)]">
-                  TELEMETRY: SUBJECT POV LINKED
+            <div class="flex-1 p-2 md:p-6 flex flex-col items-center justify-center relative bg-[#020202]">
+              <div class="border border-[var(--phosphor-dark)] relative cursor-crosshair shadow-[0_0_20px_rgba(255,176,0,0.05)] w-full max-w-[900px] aspect-[4/3] md:aspect-[16/9] flex justify-center items-center overflow-hidden bg-black touch-none">
+                <canvas id="phase2-canvas" width="900" height="500" class="block w-full h-full object-fill md:object-contain"></canvas>
+                <div class="absolute top-2 left-2 text-[10px] md:text-xs text-white bg-black/80 px-1 md:px-2 py-1 border border-[var(--phosphor-dim)]">
+                  POV LINKED
                 </div>
-                <div class="absolute bottom-4 right-4 text-xs text-white bg-black/80 px-3 py-2 flex items-center gap-4 border border-[var(--phosphor-dim)]">
-                   <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#e6dc83] inline-block shadow-[0_0_5px_#e6dc83]"></span> RESOLVED FLOOR</span>
-                   <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#9c8354] inline-block shadow-[0_0_5px_#9c8354]"></span> RESOLVED WALL</span>
-                   <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#222] inline-block border border-[#444]"></span> PROBABILITY</span>
+                <div class="absolute bottom-2 right-2 text-[10px] md:text-xs text-white bg-black/80 px-2 py-1 flex items-center gap-2 md:gap-4 border border-[var(--phosphor-dim)]">
+                   <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-3 md:h-3 bg-[#e6dc83] inline-block shadow-[0_0_5px_#e6dc83]"></span> <span class="hidden sm:inline">FLOOR</span></span>
+                   <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-3 md:h-3 bg-[#9c8354] inline-block shadow-[0_0_5px_#9c8354]"></span> <span class="hidden sm:inline">WALL</span></span>
+                   <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-3 md:h-3 bg-[#222] inline-block border border-[#444]"></span> <span class="hidden sm:inline">PROB.</span></span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- PHASE 3: THE TRAP -->
-          <div id="phase-3" class="phase-container panel-border p-1">
-            <div class="p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
-              <h3 class="text-2xl mb-1 crt-glow">MODULE 3: HYPERBOLIC TRAP GEOMETRY</h3>
-              <p class="text-sm opacity-80 leading-relaxed">
+          <div id="phase-3" class="phase-container panel-border p-1 overflow-y-auto">
+            <div class="p-2 md:p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
+              <h3 class="text-xl md:text-2xl mb-1 crt-glow">MOD 3: HYPERBOLIC TRAP GEOMETRY</h3>
+              <p class="text-xs md:text-sm opacity-80 leading-relaxed hidden md:block">
                 "Because the sub-dimension generates hyperbolically based on the observer's movement vector, the volume of newly generated topology exponentially outpaces the subject's physical traversal capability."
               </p>
             </div>
-            <div class="flex-1 p-6 flex gap-6 overflow-hidden bg-[#020202]">
-              <div class="w-1/2 flex flex-col relative border border-[var(--phosphor-dark)] bg-[#050505] p-4">
-                <h4 class="text-center text-sm mb-4 tracking-widest opacity-80">FIG 4: CONFINEMENT DISPARITY</h4>
-                <div class="flex-1 border-l border-b border-[var(--phosphor-dim)] relative bg-black ml-6 mb-6 shadow-[inset_0_0_30px_rgba(0,0,0,1)]">
+            <div class="flex-1 p-2 md:p-6 flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#020202]">
+              <div class="w-full lg:w-1/2 flex flex-col relative border border-[var(--phosphor-dark)] bg-[#050505] p-2 md:p-4 min-h-[250px]">
+                <h4 class="text-center text-xs md:text-sm mb-2 md:mb-4 tracking-widest opacity-80">FIG 4: CONFINEMENT DISPARITY</h4>
+                <div class="flex-1 border-l border-b border-[var(--phosphor-dim)] relative bg-black ml-4 md:ml-6 mb-4 md:mb-6 shadow-[inset_0_0_30px_rgba(0,0,0,1)]">
                   <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(var(--phosphor-amber) 1px, transparent 1px), linear-gradient(90deg, var(--phosphor-amber) 1px, transparent 1px); background-size: 20px 20px;"></div>
-                  <div class="absolute left-[-2rem] top-0 h-full flex flex-col justify-between text-xs opacity-60"><span>100</span><span>50</span><span>0</span></div>
-                  <div class="absolute bottom-[-1.5rem] w-full flex justify-between text-xs opacity-60"><span>0h</span><span>5h</span><span>10h</span></div>
+                  <div class="absolute left-[-1.5rem] md:left-[-2rem] top-0 h-full flex flex-col justify-between text-[10px] md:text-xs opacity-60"><span>100</span><span>50</span><span>0</span></div>
+                  <div class="absolute bottom-[-1rem] md:bottom-[-1.5rem] w-full flex justify-between text-[10px] md:text-xs opacity-60"><span>0h</span><span>5h</span><span>10h</span></div>
                   <svg id="phase3-svg" class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
                 </div>
-                <div class="mt-2 bg-[#000] p-4 border border-[var(--phosphor-dark)]">
-                  <label class="block text-sm mb-2 flex justify-between items-center">
-                    <span>AGENT SEARCH TIME ELAPSED:</span>
-                    <span id="p3-time-val" class="text-xl text-white font-bold">0.0 HRS</span>
+                <div class="mt-2 bg-[#000] p-2 md:p-4 border border-[var(--phosphor-dark)]">
+                  <label class="block text-xs md:text-sm mb-2 flex justify-between items-center">
+                    <span>AGENT SEARCH TIME:</span>
+                    <span id="p3-time-val" class="text-sm md:text-xl text-white font-bold">0.0 HRS</span>
                   </label>
                   <input type="range" id="p3-slider" min="0" max="10" step="0.1" value="0">
                 </div>
               </div>
               
-              <div id="p3-radar-container" class="w-1/2 border border-[var(--phosphor-dark)] bg-black relative flex flex-col justify-center items-center overflow-hidden">
+              <div id="p3-radar-container" class="w-full lg:w-1/2 border border-[var(--phosphor-dark)] bg-black relative flex flex-col justify-center items-center overflow-hidden min-h-[300px]">
                  <div class="absolute inset-0" style="background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);"></div>
-                 <div class="absolute top-4 text-xs text-white z-10 bg-black/80 px-3 py-1 border border-[var(--phosphor-dim)]">TOPOLOGICAL AREA MAP</div>
+                 <div class="absolute top-2 md:top-4 text-[10px] md:text-xs text-white z-10 bg-black/80 px-2 md:px-3 py-1 border border-[var(--phosphor-dim)]">TOPOLOGICAL AREA MAP</div>
                  <div class="radar-sweep"></div>
                  
                  <div id="p3-red-circle" class="absolute border border-red-500 rounded-full bg-red-900/10 flex justify-center items-center transition-all duration-100 ease-linear shadow-[0_0_30px_rgba(255,0,0,0.3)]"></div>
                  <div id="p3-white-circle" class="absolute border border-white rounded-full bg-white/10 transition-all duration-100 ease-linear flex justify-center items-center">
-                    <div class="w-2 h-2 bg-white rounded-full shadow-[0_0_8px_#fff]"></div>
+                    <div class="w-1 h-1 md:w-2 md:h-2 bg-white rounded-full shadow-[0_0_8px_#fff]"></div>
                  </div>
-                 <div id="p3-escape-node" class="absolute w-2 h-2 bg-green-500 rounded-full shadow-[0_0_15px_#0f0] transition-all duration-100"></div>
+                 <div id="p3-escape-node" class="absolute w-1 h-1 md:w-2 md:h-2 bg-green-500 rounded-full shadow-[0_0_15px_#0f0] transition-all duration-100"></div>
 
-                 <div id="p3-stats" class="absolute bottom-4 left-4 right-4 text-sm font-mono bg-[#050505]/90 p-4 border border-[var(--phosphor-dark)] flex flex-col gap-2">
-                    <div class="flex justify-between items-end border-b border-[#222] pb-1"><span class="opacity-60">AREA SEARCHED:</span><span id="p3-stat-agent" class="text-white text-lg">0.0 U³</span></div>
-                    <div class="flex justify-between items-end border-b border-[#222] pb-1"><span class="opacity-60 text-red-500">LABYRINTH VOLUME:</span><span id="p3-stat-gen" class="text-red-500 text-lg">0.0 U³</span></div>
+                 <div id="p3-stats" class="absolute bottom-2 md:bottom-4 left-2 md:left-4 right-2 md:right-4 text-[10px] md:text-sm font-mono bg-[#050505]/90 p-2 md:p-4 border border-[var(--phosphor-dark)] flex flex-col gap-1 md:gap-2">
+                    <div class="flex justify-between items-end border-b border-[#222] pb-1"><span class="opacity-60">AREA SEARCHED:</span><span id="p3-stat-agent" class="text-white text-xs md:text-lg">0.0 U³</span></div>
+                    <div class="flex justify-between items-end border-b border-[#222] pb-1"><span class="opacity-60 text-red-500">LABYRINTH VOLUME:</span><span id="p3-stat-gen" class="text-red-500 text-xs md:text-lg">0.0 U³</span></div>
                     <div class="flex justify-between items-end pt-1">
-                      <span class="opacity-60">ESCAPE PROBABILITY:</span><span id="p3-stat-prob" class="text-xl crt-glow">100%</span>
+                      <span class="opacity-60">ESCAPE PROBABILITY:</span><span id="p3-stat-prob" class="text-sm md:text-xl crt-glow">100%</span>
                     </div>
                  </div>
               </div>
@@ -383,17 +419,17 @@
 
           <!-- PHASE 4: STOCHASTIC WANG-TILING -->
           <div id="phase-4" class="phase-container panel-border p-1">
-            <div class="p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
-              <h3 class="text-2xl mb-1 crt-glow">MODULE 4: ALGORITHMIC GENERATION</h3>
-              <p class="text-sm opacity-80 leading-relaxed">
+            <div class="p-2 md:p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
+              <h3 class="text-xl md:text-2xl mb-1 crt-glow">MOD 4: ALGORITHMIC GENERATION</h3>
+              <p class="text-xs md:text-sm opacity-80 leading-relaxed hidden md:block">
                 "Rooms generate on the fly driven by a stochastic Wang-tiling algorithm." This displays the computational logic assembling coherent Euclidean paths out of quantum noise at the observation collapse front.
               </p>
             </div>
-            <div class="flex-1 p-6 flex justify-center items-center bg-[#020202]">
-               <div class="border border-[var(--phosphor-dark)] relative p-2 bg-black shadow-[0_0_20px_rgba(255,176,0,0.05)]">
-                  <canvas id="phase4-canvas" width="800" height="450" class="border border-[#111]"></canvas>
-                  <div class="absolute top-4 left-4 text-xs text-white bg-black/80 px-2 py-1 border border-[var(--phosphor-dim)]">WANG-TILE COLLAPSE VISUALIZER</div>
-                  <button id="p4-reset" class="absolute bottom-4 right-4 border border-[var(--phosphor-amber)] text-[var(--phosphor-amber)] px-4 py-2 bg-black hover:bg-[var(--phosphor-dark)] hover:text-white transition-colors">
+            <div class="flex-1 p-2 md:p-6 flex justify-center items-center bg-[#020202]">
+               <div class="w-full max-w-[800px] aspect-[16/9] border border-[var(--phosphor-dark)] relative p-1 md:p-2 bg-black shadow-[0_0_20px_rgba(255,176,0,0.05)]">
+                  <canvas id="phase4-canvas" width="800" height="450" class="w-full h-full object-contain border border-[#111]"></canvas>
+                  <div class="absolute top-2 left-2 md:top-4 md:left-4 text-[10px] md:text-xs text-white bg-black/80 px-1 md:px-2 py-1 border border-[var(--phosphor-dim)]">WANG-TILE SIM</div>
+                  <button id="p4-reset" class="absolute bottom-2 right-2 md:bottom-4 md:right-4 border border-[var(--phosphor-amber)] text-[var(--phosphor-amber)] px-2 py-1 md:px-4 md:py-2 bg-black hover:bg-[var(--phosphor-dark)] hover:text-white transition-colors text-[10px] md:text-base">
                     [ RE-INITIALIZE SEED ]
                   </button>
                </div>
@@ -402,23 +438,23 @@
 
           <!-- PHASE 5: CONTAINMENT RADAR -->
           <div id="phase-5" class="phase-container panel-border p-1">
-            <div class="p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
-              <h3 class="text-2xl mb-1 crt-glow text-green-500">MODULE 5: SECTOR 4 CONTAINMENT RADAR</h3>
-              <p class="text-sm opacity-80 leading-relaxed text-green-400">
+            <div class="p-2 md:p-4 border-b border-[var(--phosphor-dark)] bg-[#050505]">
+              <h3 class="text-xl md:text-2xl mb-1 crt-glow text-green-500">MOD 5: SEC-4 CONTAINMENT RADAR</h3>
+              <p class="text-xs md:text-sm opacity-80 leading-relaxed text-green-400 hidden md:block">
                 "Maintain a minimum 50-meter distance from confirmed weak-points in the containment grid. Rupture zones are unstable and actively bleeding baseline reality."
               </p>
             </div>
-            <div class="flex-1 p-6 flex justify-center items-center bg-[#020202]">
-               <div class="border-4 border-[#0a150a] relative rounded-full overflow-hidden bg-[#010a01] w-[500px] h-[500px] shadow-[0_0_80px_rgba(0,255,0,0.05),inset_0_0_50px_rgba(0,0,0,1)]">
-                  <canvas id="phase5-canvas" width="500" height="500"></canvas>
-                  <div class="absolute inset-0 border-[24px] border-black rounded-full pointer-events-none"></div>
+            <div class="flex-1 p-2 md:p-6 flex justify-center items-center bg-[#020202]">
+               <div class="w-full max-w-[500px] aspect-square border-4 border-[#0a150a] relative rounded-full overflow-hidden bg-[#010a01] shadow-[0_0_80px_rgba(0,255,0,0.05),inset_0_0_50px_rgba(0,0,0,1)]">
+                  <canvas id="phase5-canvas" width="500" height="500" class="w-full h-full object-contain"></canvas>
+                  <div class="absolute inset-0 border-[12px] md:border-[24px] border-black rounded-full pointer-events-none"></div>
                   <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
                     <div class="w-full h-[1px] bg-green-900/40"></div>
                     <div class="absolute h-full w-[1px] bg-green-900/40"></div>
                     <div class="absolute w-[80%] h-[80%] border border-green-900/30 rounded-full"></div>
                     <div class="absolute w-[40%] h-[40%] border border-green-900/30 rounded-full"></div>
                   </div>
-                  <div class="absolute top-8 left-1/2 transform -translate-x-1/2 text-xs text-green-400 bg-black/80 px-3 py-1 border border-green-900 tracking-widest">EREBUS // ACTIVE PING</div>
+                  <div class="absolute top-4 md:top-8 left-1/2 transform -translate-x-1/2 text-[10px] md:text-xs text-green-400 bg-black/80 px-2 md:px-3 py-1 border border-green-900 tracking-widest whitespace-nowrap">EREBUS // ACTIVE PING</div>
                </div>
             </div>
           </div>
@@ -448,11 +484,10 @@
       if (this.ctx) return;
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 1; // Default to on when initialized
+      this.masterGain.gain.value = 1; 
       this.masterGain.connect(this.ctx.destination);
       this.isOn = true;
 
-      // Deep, ominous hum
       this.drone = this.ctx.createOscillator();
       this.drone.type = 'sine';
       this.drone.frequency.value = 55;
@@ -461,7 +496,6 @@
       this.drone.connect(droneGain).connect(this.masterGain);
       this.drone.start();
 
-      // Atmospheric Noise
       let bufferSize = this.ctx.sampleRate * 2;
       let noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       let output = noiseBuffer.getChannelData(0);
@@ -522,7 +556,6 @@
       if (!this.ctx) this.init();
       if (this.ctx.state === 'suspended') this.ctx.resume();
       
-      // Massive cinematic drop
       let osc = this.ctx.createOscillator();
       let gain = this.ctx.createGain();
       osc.type = 'sawtooth';
@@ -546,36 +579,51 @@
     }
   };
 
-  document.getElementById('audio-toggle').addEventListener('click', (e) => {
+  const handleAudioToggle = (e) => {
     const isOn = AudioEngine.toggle();
-    e.target.innerText = isOn ? '[■] AUDIO: ON' : '[ ] AUDIO: OFF';
-    e.target.className = isOn 
-      ? "border-2 border-[var(--phosphor-amber)] bg-[#1a1500] text-[var(--phosphor-amber)] shadow-[0_0_10px_#ffb000] px-4 py-2 transition-colors cursor-pointer text-lg tracking-widest"
-      : "border border-[var(--phosphor-dim)] text-[var(--phosphor-dim)] px-4 py-2 hover:bg-[var(--phosphor-dark)] hover:text-[var(--phosphor-amber)] transition-colors cursor-pointer text-lg tracking-widest";
+    const btnText = isOn ? '[■] AUDIO' : '[ ] SND OFF';
+    const mobileBtnText = isOn ? '[■] SND' : '[ ] SND OFF';
+    
+    document.getElementById('audio-toggle').innerText = btnText;
+    document.getElementById('audio-toggle-mobile').innerText = mobileBtnText;
+    
+    const onClass = "border-2 border-[var(--phosphor-amber)] bg-[#1a1500] text-[var(--phosphor-amber)] shadow-[0_0_10px_#ffb000] px-2 md:px-4 py-1 md:py-2 transition-colors cursor-pointer text-sm md:text-lg tracking-widest";
+    const offClass = "border border-[var(--phosphor-dim)] text-[var(--phosphor-dim)] px-2 md:px-4 py-1 md:py-2 hover:bg-[var(--phosphor-dark)] hover:text-[var(--phosphor-amber)] transition-colors cursor-pointer text-sm md:text-lg tracking-widest";
+    
+    document.getElementById('audio-toggle').className = `hidden sm:block ${isOn ? onClass : offClass}`;
+    document.getElementById('audio-toggle-mobile').className = `sm:hidden ${isOn ? onClass : offClass} text-xs`;
+    
     AudioEngine.playBeep(800, 'square', 0.1);
-  });
+  };
+
+  document.getElementById('audio-toggle').addEventListener('click', handleAudioToggle);
+  document.getElementById('audio-toggle-mobile').addEventListener('click', handleAudioToggle);
 
   // --- LANDING PAGE LOGIC ---
   const initLandingCanvas = () => {
     const canvas = document.getElementById('landing-canvas');
     const ctx = canvas.getContext('2d');
     
-    // Resize
     const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener('resize', resize);
     resize();
 
     let mouse = { x: canvas.width/2, y: canvas.height/2 };
-    canvas.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX; mouse.y = e.clientY;
-    });
+    
+    const updateMouse = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      mouse.x = (clientX - rect.left) * scaleX;
+      mouse.y = (clientY - rect.top) * scaleY;
+    };
+    
+    canvas.addEventListener('mousemove', updateMouse);
+    canvas.addEventListener('touchmove', updateMouse, {passive: true});
 
-    // 3D Wireframe Tunnel Generation
-    const fov = 400;
-    const points = [];
-    const numRings = 25;
-    const pointsPerRing = 16;
-    const radius = 600;
+    const fov = 400, numRings = 25, pointsPerRing = 16, radius = 600, points = [];
 
     for (let r = 0; r < numRings; r++) {
       let z = (r / numRings) * 2000;
@@ -587,32 +635,26 @@
 
     let animationId;
     const renderTunnel = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      
-      // Distortion offset based on mouse
       const targetOffX = (mouse.x - cx) * 0.5;
       const targetOffY = (mouse.y - cy) * 0.5;
 
       ctx.strokeStyle = 'var(--phosphor-amber)';
       ctx.lineWidth = 1.5;
 
-      // Group points by ring for drawing lines
       const projectedRings = Array(numRings).fill().map(() => []);
 
       for (let i = 0; i < points.length; i++) {
         let pt = points[i];
-        pt.z -= 10; // Move forward
-        if (pt.z < 10) pt.z += 2000; // Loop back
-        pt.angle += 0.005; // Spin
+        pt.z -= 10; 
+        if (pt.z < 10) pt.z += 2000; 
+        pt.angle += 0.005; 
 
-        // Perspective projection
         let scale = fov / pt.z;
-        
-        // Add hyperbolic warping toward center
         let warp = Math.max(0, (2000 - pt.z) / 2000);
         let distortedX = Math.cos(pt.angle) * radius + (targetOffX * warp);
         let distortedY = Math.sin(pt.angle) * radius + (targetOffY * warp);
@@ -623,7 +665,6 @@
         projectedRings[pt.ringId].push({ x: px, y: py, z: pt.z });
       }
 
-      // Draw Tunnel Webs
       for (let r = 0; r < numRings; r++) {
         let ring = projectedRings[r];
         if(!ring.length) continue;
@@ -634,7 +675,6 @@
           if (p === 0) ctx.moveTo(curr.x, curr.y);
           else ctx.lineTo(curr.x, curr.y);
           
-          // Connect to previous ring
           if (r > 0) {
             let prevRing = projectedRings[r-1];
             ctx.moveTo(curr.x, curr.y);
@@ -642,18 +682,14 @@
           }
         }
         ctx.closePath();
-        
-        // Fade to black in distance
         let alpha = Math.max(0.05, 1 - (ring[0].z / 2000));
         ctx.strokeStyle = `rgba(255, 176, 0, ${alpha})`;
         ctx.stroke();
       }
-
       animationId = requestAnimationFrame(renderTunnel);
     };
     renderTunnel();
 
-    // Typewriter effect
     const textStr = "EXECUTIVE SUMMARY: The phenomenon of 'noclipping'—falling through the dimensional boundary of baseline reality into an endless, empty maze—has been confirmed by deep-ice seismology at Outpost 31. This terminal connects the dots between three confirmed mechanisms of the anomaly: Spacetime Elasticity, Quantum Superposition, and Hyperbolic Geometry.";
     const textEl = document.getElementById('landing-typing-text');
     let charIdx = 0;
@@ -669,10 +705,9 @@
     };
     setTimeout(typeChar, 1000);
 
-    // Transition Logic
     document.getElementById('btn-enter-terminal').addEventListener('click', () => {
       cancelAnimationFrame(animationId);
-      AudioEngine.playTear(); // Init audio and play massive tear sound
+      AudioEngine.playTear();
       
       const monitor = document.getElementById('main-monitor');
       monitor.classList.add('glitch-transition');
@@ -680,8 +715,8 @@
       setTimeout(() => {
         document.getElementById('landing-view').style.display = 'none';
         document.getElementById('terminal-view').style.display = 'flex';
-        initPhases(); // Start the main app
-      }, 300); // Switch half way through glitch
+        initPhases();
+      }, 300);
       
       setTimeout(() => {
         monitor.classList.remove('glitch-transition');
@@ -707,11 +742,8 @@
   document.getElementById('menu-toggle').addEventListener('click', () => {
     const sb = document.getElementById('sidebar');
     AudioEngine.playBeep(1200, 'square', 0.05);
-    if(sb.style.width === '0px' || sb.classList.contains('w-0')) {
-      sb.style.width = '18rem'; sb.style.padding = '0.5rem'; sb.style.opacity = '1';
-    } else {
-      sb.style.width = '0px'; sb.style.padding = '0'; sb.style.opacity = '0';
-    }
+    sb.classList.toggle('sidebar-closed');
+    sb.classList.toggle('sidebar-open');
   });
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -727,6 +759,13 @@
       activePhase = parseInt(phase);
       clearAnimations();
       initPhases();
+      
+      // Auto-close sidebar on mobile after selection
+      if(window.innerWidth < 768) {
+         const sb = document.getElementById('sidebar');
+         sb.classList.add('sidebar-closed');
+         sb.classList.remove('sidebar-open');
+      }
     });
   });
 
@@ -747,7 +786,7 @@
       wasTorn = isTorn;
 
       valText.innerText = `${pressure}%`;
-      valText.className = isTorn ? "text-red-500 font-bold crt-glow text-3xl" : "text-white text-3xl";
+      valText.className = isTorn ? "text-xl md:text-3xl text-red-500 font-bold crt-glow" : "text-xl md:text-3xl text-white";
       warning.style.display = isTorn ? 'block' : 'none';
 
       const curveY = isTorn ? 100 : 100 + (pressure * 2.5);
@@ -805,16 +844,36 @@
     const fov = Math.PI / 2.0; 
     let quantumMap = new Map();
 
-    const handleMouseMove = (e) => {
+    const handlePointerMove = (e) => {
       const rect = canvas.getBoundingClientRect();
-      globalInput.mouse.x = e.clientX - rect.left;
-      globalInput.mouse.y = e.clientY - rect.top;
+      // Calculate responsive scale correctly
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      globalInput.mouse.x = (clientX - rect.left) * scaleX;
+      globalInput.mouse.y = (clientY - rect.top) * scaleY;
+      
+      if(e.type === 'touchmove' || e.type === 'touchstart') {
+          globalInput.keys.w = true; // Auto-walk towards touch on mobile
+      }
     };
-    canvas.addEventListener('mousemove', handleMouseMove);
+    
+    const handleTouchEnd = () => { globalInput.keys.w = false; };
+
+    canvas.addEventListener('mousemove', handlePointerMove);
+    canvas.addEventListener('touchstart', handlePointerMove, {passive: true});
+    canvas.addEventListener('touchmove', handlePointerMove, {passive: true});
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     const render = () => {
       if (activePhase !== 2) { 
-        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('mousemove', handlePointerMove);
+        canvas.removeEventListener('touchstart', handlePointerMove);
+        canvas.removeEventListener('touchmove', handlePointerMove);
+        canvas.removeEventListener('touchend', handleTouchEnd);
         return; 
       }
 
@@ -929,7 +988,7 @@
       const agentVol = 0.6 * Math.pow(h, 2), genVol = Math.exp(h * 0.46) - 1;
 
       timeVal.innerText = `${h.toFixed(1)} HRS`;
-      timeVal.className = isLost ? "text-xl text-red-500 font-bold crt-glow animate-pulse" : "text-xl text-white font-bold";
+      timeVal.className = isLost ? "text-sm md:text-xl text-red-500 font-bold crt-glow animate-pulse" : "text-sm md:text-xl text-white font-bold";
 
       let aPts = "", gPts = "";
       for(let i=0; i<=10; i+=0.2) {
@@ -955,7 +1014,7 @@
       sAgent.innerText = `${agentVol.toFixed(1)} U³`; sGen.innerText = `${genVol.toFixed(1)} U³`;
       const prob = h === 0 ? 100 : Math.max(0.00000001, 100 / Math.exp(h));
       sProb.innerText = `${prob.toFixed(isLost ? 8 : 2)}%`;
-      sProb.className = isLost ? "text-xl text-red-500 font-bold crt-glow animate-pulse" : "text-xl text-[var(--phosphor-amber)] crt-glow";
+      sProb.className = isLost ? "text-sm md:text-xl text-red-500 font-bold crt-glow animate-pulse" : "text-sm md:text-xl text-[var(--phosphor-amber)] crt-glow";
       radarContainer.style.borderColor = isLost ? '#f00' : 'var(--phosphor-dark)';
     };
 
